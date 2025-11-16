@@ -624,6 +624,7 @@
         .product-actions {
             display: flex;
             gap: 0.5rem;
+            flex-wrap: wrap;
         }
 
         .product-actions button {
@@ -634,6 +635,7 @@
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s ease;
+            min-width: 80px;
         }
 
         .add-to-cart {
@@ -654,6 +656,24 @@
         .buy-now:hover {
             transform: scale(1.05);
             box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, var(--danger), #e53e3e);
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .delete-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(252, 129, 129, 0.4);
         }
 
         /* Modal */
@@ -911,6 +931,45 @@
             margin-bottom: 1rem;
         }
 
+        /* Payment Options */
+        .payment-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .payment-option {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid var(--glass-border);
+            border-radius: 10px;
+            background: var(--glass);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .payment-option:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .payment-option.active {
+            border-color: var(--accent);
+            background: rgba(240, 147, 251, 0.2);
+        }
+
+        .payment-option i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+        }
+
+        .payment-option span {
+            color: white;
+            font-weight: 600;
+        }
+
         /* Payment Form */
         .payment-form {
             margin-top: 1.5rem;
@@ -987,6 +1046,11 @@
             .products-grid {
                 grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
                 gap: 1rem;
+            }
+
+            .payment-options {
+                flex-direction: column;
+                gap: 0.5rem;
             }
         }
 
@@ -1153,9 +1217,9 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">
-                        <i class="fas fa-dollar-sign"></i>
+                        <i class="fas fa-rupee-sign"></i>
                     </div>
-                    <div class="stat-value" id="totalRevenue">$0</div>
+                    <div class="stat-value" id="totalRevenue">₹0</div>
                     <div class="stat-label">Total Revenue</div>
                 </div>
                 <div class="stat-card">
@@ -1279,7 +1343,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="productPrice">Price ($) *</label>
+                    <label for="productPrice">Price (₹) *</label>
                     <input type="number" id="productPrice" required placeholder="0.00" step="0.01" min="0">
                 </div>
                 <div class="form-group">
@@ -1326,9 +1390,27 @@
         </div>
         <div class="cart-total">
             <h3>Total</h3>
-            <div class="total-price" id="totalPrice">$0.00</div>
+            <div class="total-price" id="totalPrice">₹0.00</div>
+            <div class="payment-options">
+                <button class="payment-option active" onclick="selectPaymentMethod('card')">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Credit/Debit Card</span>
+                </button>
+                <button class="payment-option" onclick="selectPaymentMethod('upi')">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>UPI</span>
+                </button>
+                <button class="payment-option" onclick="selectPaymentMethod('gpay')">
+                    <i class="fab fa-google-pay"></i>
+                    <span>Google Pay</span>
+                </button>
+                <button class="payment-option" onclick="selectPaymentMethod('phonepe')">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>PhonePe</span>
+                </button>
+            </div>
             <button class="btn btn-primary" style="width: 100%;" onclick="openPaymentModal()">
-                <i class="fas fa-credit-card"></i> Checkout
+                <i class="fas fa-lock"></i> Checkout
             </button>
         </div>
     </div>
@@ -1348,10 +1430,29 @@
                     <input type="text" id="cardName" required placeholder="John Doe">
                 </div>
                 <div class="form-group">
+                    <label for="paymentMethod">Payment Method</label>
+                    <select id="paymentMethod" onchange="updatePaymentForm(this.value)">
+                        <option value="card">Credit/Debit Card</option>
+                        <option value="upi">UPI</option>
+                        <option value="gpay">Google Pay</option>
+                        <option value="phonepe">PhonePe</option>
+                        <option value="paytm">Paytm</option>
+                        <option value="netbanking">Net Banking</option>
+                    </select>
+                </div>
+                <div class="form-group" id="cardDetails">
                     <label for="cardElement">Card Information</label>
                     <div id="cardElement" class="card-element">
                         <!-- Stripe Elements will be inserted here -->
                     </div>
+                </div>
+                <div class="form-group" id="upiDetails" style="display: none;">
+                    <label for="upiId">UPI ID</label>
+                    <input type="text" id="upiId" placeholder="your-upi-id@upi">
+                </div>
+                <div class="form-group" id="phonepeDetails" style="display: none;">
+                    <label for="phonepeNumber">PhonePe Number</label>
+                    <input type="text" id="phonepeNumber" placeholder="9876543210">
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%;" id="payButton">
                     <i class="fas fa-lock"></i> Pay Now
@@ -1369,12 +1470,12 @@
     <script>
         // Firebase Configuration for dkrshop-6d463
         const firebaseConfig = {
-            apiKey: "AIzaSyC_K0FSOvlE5ZWfPvlEwp0IXIqWiPUcNWI", // Get actual key from Firebase Console
+            apiKey: "AIzaSyC_K0FSOvlE5ZWfPvlEwp0IXIqWiPUcNWI", // Replace with your actual key
             authDomain: "dkrshop-6d463.firebaseapp.com",
             projectId: "dkrshop-6d463",
             storageBucket: "dkrshop-6d463.firebasestorage.app",
             messagingSenderId: "489306104384",
-            appId:"1:489306104384:web:50d8a4a0933feea4ba35a5",// Get actual app ID from Firebase Console
+            appId: "1:489306104384:web:50d8a4a0933feea4ba35a5" // Replace with your actual app ID
         };
 
         // Initialize Firebase
@@ -1394,6 +1495,10 @@
         let cart = [];
         let orders = [];
         let selectedFile = null;
+        let selectedPaymentMethod = 'card';
+
+        // Currency conversion rates (USD to INR)
+        const usdToInr = 83; // Approximate conversion rate
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
@@ -1541,14 +1646,16 @@
                     document.getElementById('totalOrders').textContent = snapshot.size;
                 });
             
-            // Calculate total revenue
+            // Calculate total revenue in INR
             db.collection('orders').where('sellerId', '==', currentUser.uid).get()
                 .then(snapshot => {
                     let revenue = 0;
                     snapshot.forEach(doc => {
                         revenue += doc.data().total;
                     });
-                    document.getElementById('totalRevenue').textContent = '$' + revenue.toFixed(2);
+                    // Convert to INR
+                    const inrRevenue = (revenue * usdToInr).toFixed(2);
+                    document.getElementById('totalRevenue').textContent = '₹' + inrRevenue;
                 });
             
             // Count unique customers
@@ -1651,6 +1758,9 @@
             
             const conditionBadge = product.condition === 'new' ? '<span class="product-badge">NEW</span>' : '';
             
+            // Convert price to INR for display
+            const priceInInr = (product.price * usdToInr).toFixed(2);
+            
             card.innerHTML = `
                 ${conditionBadge}
                 <div class="product-image">
@@ -1658,7 +1768,7 @@
                 </div>
                 <div class="product-info">
                     <h3 class="product-title">${product.name}</h3>
-                    <div class="product-price">$${product.price.toFixed(2)}</div>
+                    <div class="product-price">₹${priceInInr}</div>
                     <div class="product-meta">
                         <span><i class="fas fa-user"></i> ${product.sellerName}</span>
                         <span class="product-rating">
@@ -1673,6 +1783,11 @@
                         <button class="buy-now" onclick="buyNow('${productId}')">
                             <i class="fas fa-bolt"></i> Buy Now
                         </button>
+                        ${product.sellerId === currentUser.uid ? `
+                        <button class="delete-btn" onclick="deleteProduct('${productId}')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                        ` : ''}
                     </div>
                 </div>
             `;
@@ -1687,6 +1802,9 @@
             const statusClass = order.status === 'delivered' ? 'status-delivered' : 
                                order.status === 'shipped' ? 'status-shipped' : 'status-processing';
             
+            // Convert total to INR
+            const totalInInr = (order.total * usdToInr).toFixed(2);
+            
             card.innerHTML = `
                 <div class="order-header">
                     <div>
@@ -1699,12 +1817,12 @@
                     ${order.items.map(item => `
                         <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                             <span>${item.name} x ${item.quantity}</span>
-                            <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                            <span>₹${(item.price * usdToInr * item.quantity).toFixed(2)}</span>
                         </div>
                     `).join('')}
                 </div>
                 <div style="border-top: 1px solid var(--glass-border); padding-top: 1rem; display: flex; justify-content: space-between;">
-                    <strong>Total: $${order.total.toFixed(2)}</strong>
+                    <strong>Total: ₹${totalInInr}</strong>
                     <button class="btn btn-secondary" style="padding: 0.5rem 1rem;">
                         <i class="fas fa-eye"></i> View Details
                     </button>
@@ -1805,6 +1923,20 @@
             );
         }
 
+        function deleteProduct(productId) {
+            if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+                db.collection('products').doc(productId).delete()
+                    .then(() => {
+                        showNotification('Product deleted successfully!');
+                        loadProducts();
+                        loadDashboardData();
+                    })
+                    .catch(error => {
+                        showNotification('Error deleting product: ' + error.message, true);
+                    });
+            }
+        }
+
         // Cart Functions
         function addToCart(productId) {
             db.collection('products').doc(productId).get()
@@ -1863,7 +1995,7 @@
                     <div class="cart-item-info">
                         <div class="cart-item-details">
                             <h4>${item.name}</h4>
-                            <p>$${item.price.toFixed(2)} each</p>
+                            <p>₹${(item.price * usdToInr).toFixed(2)} each</p>
                         </div>
                         <div class="cart-item-actions">
                             <div class="quantity-control">
@@ -1902,7 +2034,8 @@
 
         function updateTotalPrice() {
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            document.getElementById('totalPrice').textContent = `$${total.toFixed(2)}`;
+            const totalInInr = (total * usdToInr).toFixed(2);
+            document.getElementById('totalPrice').textContent = '₹' + totalInInr;
         }
 
         function saveCartToStorage() {
@@ -1943,6 +2076,36 @@
             document.getElementById('paymentModal').classList.remove('active');
         }
 
+        function selectPaymentMethod(method) {
+            selectedPaymentMethod = method;
+            
+            // Show/hide relevant form sections
+            const cardDetails = document.getElementById('cardDetails');
+            const upiDetails = document.getElementById('upiDetails');
+            const phonepeDetails = document.getElementById('phonepeDetails');
+            
+            cardDetails.style.display = method === 'card' ? 'block' : 'none';
+            upiDetails.style.display = method === 'upi' ? 'block' : 'none';
+            phonepeDetails.style.display = method === 'phonepe' ? 'block' : 'none';
+        }
+
+        function updatePaymentForm(method) {
+            // Update form based on selected payment method
+            if (method === 'card') {
+                document.getElementById('cardDetails').style.display = 'block';
+                document.getElementById('upiDetails').style.display = 'none';
+                document.getElementById('phonepeDetails').style.display = 'none';
+            } else if (method === 'upi') {
+                document.getElementById('cardDetails').style.display = 'none';
+                document.getElementById('upiDetails').style.display = 'block';
+                document.getElementById('phonepeDetails').style.display = 'none';
+            } else if (method === 'phonepe') {
+                document.getElementById('cardDetails').style.display = 'none';
+                document.getElementById('upiDetails').style.display = 'none';
+                document.getElementById('phonepeDetails').style.display = 'block';
+            }
+        }
+
         function processPayment(event) {
             event.preventDefault();
             
@@ -1950,31 +2113,54 @@
             payButton.innerHTML = '<span class="spinner"></span> Processing...';
             payButton.disabled = true;
             
-            // Create payment intent on the server (in a real app)
-            // For demo purposes, we'll simulate a successful payment
+            // Get payment method
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            
+            // Create order in Firestore
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const totalInInr = (total * usdToInr).toFixed(2);
+            
+            const orderData = {
+                buyerId: currentUser.uid,
+                buyerName: currentUser.displayName || 'User',
+                buyerEmail: currentUser.email,
+                items: cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                    sellerId: item.sellerId
+                })),
+                total: total,
+                totalInInr: totalInInr,
+                paymentMethod: paymentMethod,
+                status: 'processing',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            // Simulate payment processing based on method
             setTimeout(() => {
-                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                
-                // Create order in Firestore
-                const orderData = {
-                    buyerId: currentUser.uid,
-                    buyerName: currentUser.displayName || 'User',
-                    buyerEmail: currentUser.email,
-                    items: cart.map(item => ({
-                        id: item.id,
-                        name: item.name,
-                        price: item.price,
-                        quantity: item.quantity,
-                        sellerId: item.sellerId
-                    })),
-                    total: total,
-                    status: 'processing',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
+                if (paymentMethod === 'card') {
+                    // Simulate successful card payment
+                    orderData.status = 'paid';
+                    orderData.paymentId = 'card_' + Date.now();
+                } else if (paymentMethod === 'upi') {
+                    // Simulate successful UPI payment
+                    orderData.status = 'paid';
+                    orderData.paymentId = 'upi_' + Date.now();
+                } else if (paymentMethod === 'phonepe') {
+                    // Simulate successful PhonePe payment
+                    orderData.status = 'paid';
+                    orderData.paymentId = 'phonepe_' + Date.now();
+                } else {
+                    // Default to card payment
+                    orderData.status = 'paid';
+                    orderData.paymentId = 'card_' + Date.now();
+                }
                 
                 db.collection('orders').add(orderData)
                     .then(() => {
-                        showNotification('Payment successful! Order placed.');
+                        showNotification(`Payment successful! Total: ₹${totalInInr}`);
                         cart = [];
                         updateCartUI();
                         saveCartToStorage();
